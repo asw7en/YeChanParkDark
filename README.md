@@ -1,2 +1,3 @@
-# YeChanParkDark
-ParkYeChan KR 2000 year
+# Discord Bot
+
+DiscordBot KR
