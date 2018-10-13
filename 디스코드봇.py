@@ -616,8 +616,8 @@ async def on_message(message):
         learn = message.content.split(" ")
         Text = ""
 
-        client_id = "ikzYvk9OIdPP16srFlBQ"
-        client_secret = "cK8c50eMdg"
+        client_id = ""
+        client_secret = ""
 
         url = "https://openapi.naver.com/v1/papago/n2mt"
         print(len(learn))
