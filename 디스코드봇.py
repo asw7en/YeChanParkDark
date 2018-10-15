@@ -116,6 +116,7 @@ async def on_message(message):
         embed.add_field(name='!영화순위', value='영화를 1~20순위로 나눈 영화순위 정보를 제공합니다.', inline=False)
         embed.add_field(name='!급식', value='군포e비즈니스 고등학교의 급식정보를 제공합니다.', inline=False)
         embed.add_field(name='!복권', value='랜덤으로 선정한 복권번호를 메시지로 보내줍니다.', inline=False)
+        embed.add_field(name='!검색', value='!검색 검색할키워드 형식으로 입력하시면 유튜브 검색결과를 메시지로 보내줍니다.', inline=False)
 
         await client.send_message(channel,embed=embed)
 
