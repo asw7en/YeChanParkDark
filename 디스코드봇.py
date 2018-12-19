@@ -14,6 +14,7 @@ import 급식
 import os
 import sys
 import json
+import time
 
 
 client = discord.Client()
@@ -853,15 +854,27 @@ async def on_message(message):
             await client.send_message(message.channel, embed=discord.Embed(description=':game_die: ' + ':five:'))
         if randomNum ==6:
             await client.send_message(message.channel, embed=discord.Embed(description=':game_die: ' + ':six: '))
+            
+    if message.content.startswith('!타이머'):
 
+        Text = ""
+        learn = message.content.split(" ")
+        vrsize = len(learn)  # 배열크기
+        vrsize = int(vrsize)
+        for i in range(1, vrsize):  # 띄어쓰기 한 텍스트들 인식함
+            Text = Text + " " + learn[i]
 
+        sec = int(Text)
 
+        for i in range(sec, 0, -1):
+            print(i)
+            await client.send_message(message.channel, embed=discord.Embed(description='타이머 작동중 : '+str(i)+'초'))
+            time.sleep(1)
+        else:
+            print("땡")
+            await client.send_message(message.channel, embed=discord.Embed(description='타이머 종료'))
 
-
-        
-
-
-
+      
 
 
 
