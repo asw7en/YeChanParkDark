@@ -873,6 +873,39 @@ async def on_message(message):
         else:
             print("땡")
             await client.send_message(message.channel, embed=discord.Embed(description='타이머 종료'))
+            
+    if message.content.startswith('!제비뽑기'):
+        channel = message.channel
+        embed = discord.Embed(
+            title='제비뽑기',
+            description='각 번호별로 번호를 지정합니다.',
+            colour=discord.Colour.blue()
+        )
+
+        embed.set_footer(text='끗')
+
+
+        Text = ""
+        learn = message.content.split(" ")
+        vrsize = len(learn)  # 배열크기
+        vrsize = int(vrsize)
+        for i in range(1, vrsize):  # 띄어쓰기 한 텍스트들 인식함
+            Text = Text + " " + learn[i]
+        print(Text.strip()) #입력한 명령어
+
+        number = int(Text)
+
+        List = []
+        num = random.randrange(0, number)
+        for i in range(number):
+            while num in List:  # 중복일때만
+                num = random.randrange(0, number)  # 다시 랜덤수 생성
+
+            List.append(num)  # 중복 아닐때만 리스트에 추가
+            embed.add_field(name=str(i) + '번째', value=str(num), inline=True)
+
+        print(List)
+        await client.send_message(channel, embed=embed)
 
       
 
