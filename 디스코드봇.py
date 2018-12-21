@@ -9,7 +9,6 @@ from urllib.request import urlopen, Request
 import urllib
 import bs4
 import urllib.request
-import bs4
 import 급식
 import os
 import sys
@@ -189,7 +188,8 @@ async def on_message(message):
         print(url)
         req = Request(url, headers=hdr)
         html = urllib.request.urlopen(req)
-        bsObj = bs4.BeautifulSoup(html, "html.parser")
+        bsObj = 
+        .BeautifulSoup(html, "html.parser")
         todayBase = bsObj.find('div', {'class': 'main_info'})
 
         todayTemp1 = todayBase.find('span', {'class': 'todaytemp'})
