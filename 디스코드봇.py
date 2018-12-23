@@ -7,17 +7,28 @@ from discord.ext import commands
 import youtube_dl
 from urllib.request import urlopen, Request
 import urllib
-import bs4
 import urllib.request
+import bs4
 import 급식
 import os
 import sys
 import json
+from selenium import webdriver
 import time
 
-
+countG = 0
 client = discord.Client()
 players = {}
+queues= {}
+musiclist=[]
+
+def check_queue(id):
+    if queues[id]!=[]:
+        player = queues[id].pop(0)
+        players[id] = player
+        del musiclist[0]
+        player.start()
+
 @client.event
 async def on_ready():
     print("login")
@@ -158,7 +169,7 @@ async def on_message(message):
         voice_client = client.voice_client_in(server)
         msg1 = message.content.split(" ")
         url = msg1[1]
-        player = await voice_client.create_ytdl_player(url)
+        player = await voice_client.create_ytdl_player(url, after=lambda: check_queue(server.id))
         players[server.id] = player
         await client.send_message(message.channel, embed=discord.Embed(description="재생한다!!!!"))
         player.start()
@@ -179,6 +190,56 @@ async def on_message(message):
         await client.send_message(message.channel, embed=discord.Embed(description="세계의 시간은 멈춰있다..."))
         players[id].stop()
 
+    if message.content.startswith('!예약'):
+        msg1 = message.content.split(" ")
+        url = msg1[1]
+        server = message.server
+        voice_client = client.voice_client_in(server)
+        player = await voice_client.create_ytdl_player(url, after=lambda: check_queue(server.id))
+
+        if server.id in queues:
+            queues[server.id].append(player)
+            print('if 1 '+str(queues[server.id])) #queues배열 확인
+        else:
+            queues[server.id] = [player]
+            print('else 1' + str(queues[server.id]))#queues배열 확인
+        await client.send_message(message.channel,'예약 완료\n')
+        musiclist.append(url) #대기목록 링크
+
+
+    if message.content.startswith('!대기목록'):
+
+        server = message.server
+        msg1 = message.content.split(" ")
+        mList = msg1[1]
+        num = 0
+        bSize = len(musiclist)
+
+        if mList =='보기':
+            embed = discord.Embed(
+                title='대기중인 곡 들',
+                description='대기중.....',
+                colour=discord.Colour.blue()
+            )
+            for i in musiclist:
+                print('예약리스트 : ' + i)
+                embed.add_field(name='대기중인 곡', value=i, inline=False)
+            await client.send_message(message.channel, embed=embed)
+
+        if mList =='취소':
+            while num<bSize:
+                del musiclist[0]
+                num = num+1
+
+            del queues[server.id]
+            await client.send_message(message.channel,'예약중인 음악 모두 취소 완료')
+
+
+
+
+
+
+
     if message.content.startswith("!날씨"):
         learn = message.content.split(" ")
         location = learn[1]
@@ -188,8 +249,7 @@ async def on_message(message):
         print(url)
         req = Request(url, headers=hdr)
         html = urllib.request.urlopen(req)
-        bsObj = 
-        .BeautifulSoup(html, "html.parser")
+        bsObj = bs4.BeautifulSoup(html, "html.parser")
         todayBase = bsObj.find('div', {'class': 'main_info'})
 
         todayTemp1 = todayBase.find('span', {'class': 'todaytemp'})
@@ -584,7 +644,8 @@ async def on_message(message):
     if message.content.startswith('!구규범'):
         number = random.randrange(1,23)
         filename = 'gu'+str(number)+'.jpg'
-        await client.send_message(message.channel, embed=discord.Embed(title="그의 찬란한 모습.....", color=discord.Color.red()))
+        #filename = "gu1"  + ".jpg"
+        await client.send_message(message.channel, embed=discord.Embed(title="그의 찬란한 모습.....",color=discord.Color.red()))
         await client.send_file(message.channel, filename)
 
 
@@ -622,7 +683,7 @@ async def on_message(message):
         client_id = ""
         client_secret = ""
 
-        url = "https://openapi.naver.com/v1/papago/n2mt"
+        url = ""
         print(len(learn))
         vrsize = len(learn)  # 배열크기
         vrsize = int(vrsize)
@@ -785,7 +846,7 @@ async def on_message(message):
             colour=discord.Color.red()
         )
         await client.send_message(message.channel, embed=embed)
-        
+
     if message.content.startswith('!검색'):
         Text = ""
         learn = message.content.split(" ")
@@ -816,11 +877,8 @@ async def on_message(message):
             rink = 'https://www.youtube.com'+test1
             embed.add_field(name=str(i+1)+'번째 영상',value=entireText + '\n링크 : '+rink)
         await client.send_message(message.channel,embed=embed)
-    
-    
-    
-    
-     if message.content.startswith('!이모티콘'):
+
+    if message.content.startswith('!이모티콘'):
 
         emoji = [" ꒰⑅ᵕ༚ᵕ꒱ ", " ꒰◍ˊ◡ˋ꒱ ", " ⁽⁽◝꒰ ˙ ꒳ ˙ ꒱◜⁾⁾ ", " ༼ つ ◕_◕ ༽つ ", " ⋌༼ •̀ ⌂ •́ ༽⋋ ",
                  " ( ･ิᴥ･ิ) ", " •ө• ", " ค^•ﻌ•^ค ", " つ╹㉦╹)つ ", " ◕ܫ◕ ", " ᶘ ͡°ᴥ͡°ᶅ ", " ( ؕؔʘ̥̥̥̥ ه ؔؕʘ̥̥̥̥ ) ",
@@ -837,7 +895,7 @@ async def on_message(message):
         print("랜덤수 값 :" + str(randomNum))
         print(emoji[randomNum])
         await client.send_message(message.channel, embed=discord.Embed(description=emoji[randomNum])) # 랜덤 이모티콘을 메시지로 출력합니다.
-    
+
     if message.content.startswith('!주사위'):
 
         randomNum = random.randrange(1, 7) # 1~6까지 랜덤수
@@ -854,7 +912,7 @@ async def on_message(message):
             await client.send_message(message.channel, embed=discord.Embed(description=':game_die: ' + ':five:'))
         if randomNum ==6:
             await client.send_message(message.channel, embed=discord.Embed(description=':game_die: ' + ':six: '))
-            
+
     if message.content.startswith('!타이머'):
 
         Text = ""
@@ -864,16 +922,18 @@ async def on_message(message):
         for i in range(1, vrsize):  # 띄어쓰기 한 텍스트들 인식함
             Text = Text + " " + learn[i]
 
-        sec = int(Text)
+        secint = int(Text)
+        sec = secint
 
         for i in range(sec, 0, -1):
             print(i)
             await client.send_message(message.channel, embed=discord.Embed(description='타이머 작동중 : '+str(i)+'초'))
             time.sleep(1)
+
         else:
             print("땡")
             await client.send_message(message.channel, embed=discord.Embed(description='타이머 종료'))
-            
+
     if message.content.startswith('!제비뽑기'):
         channel = message.channel
         embed = discord.Embed(
@@ -902,12 +962,11 @@ async def on_message(message):
                 num = random.randrange(0, number)  # 다시 랜덤수 생성
 
             List.append(num)  # 중복 아닐때만 리스트에 추가
-            embed.add_field(name=str(i) + '번째', value=str(num), inline=True)
+            embed.add_field(name=str(i+1) + '번째', value=str(num+1), inline=True)
 
         print(List)
         await client.send_message(channel, embed=embed)
-        
-        
+
     if message.content.startswith('!이미지'):
 
         Text = ""
@@ -942,11 +1001,19 @@ async def on_message(message):
         embed = discord.Embed(
             colour=discord.Colour.green()
         )
+        embed.add_field(name='검색 : '+Text, value='링크 : '+imgsrc, inline=False)
         embed.set_image(url=imgsrc) # 이미지의 링크를 지정해 이미지를 설정합니다.
         await client.send_message(message.channel, embed=embed) # 메시지를 보냅니다.
 
-      
 
+    if message.content.startswith('!members'):
+        x = message.server.members
+        for member in x:
+            print(member.name)  # you'll just print out Member objects your way.
 
-
+    if message.content.startswith('!반가워'):
+        msg = '{0.author.mention} 나도반가워!'.format(message)
+        await client.send_message(message.channel, msg)
+   
 client.run('')
+       
